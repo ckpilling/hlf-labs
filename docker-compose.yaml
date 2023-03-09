@@ -1,0 +1,24 @@
+# version: '3.7'
+
+networks:
+  test:
+    name: fabric-ca
+
+services:
+
+  tls-ca:
+    container_name: tls-ca
+    image: hyperledger/fabric-ca
+    command: sh -c 'fabric-ca-server start -d -b tls-ca-admin:tls-ca-adminpw --port 7052'
+    environment:
+        - FABRIC_CA_SERVER_HOME=/tmp/hyperledger/fabric-ca/crypto
+        - FABRIC_CA_SERVER_TLS_ENABLED=true
+        - FABRIC_CA_SERVER_CSR_CN=tls-ca
+        - FABRIC_CA_SERVER_CSR_HOSTS=0.0.0.0
+        - FABRIC_CA_SERVER_DEBUG=true
+    volumes:
+      - /home/chris/catest/hyperledger/tls-ca/ca:/tmp/hyperledger/fabric-ca/crypto
+    networks:
+      - test
+    ports:
+      - 7052:7052

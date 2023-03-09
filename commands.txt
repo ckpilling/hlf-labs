@@ -1,0 +1,163 @@
+--> Setup TLS CA
+
+see docker-compose yaml files
+
+--> Enroll TLS CA’s Admin
+
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/tls-ca/ca/tls-cert.pem
+export FABRIC_CA_CLIENT_HOME=/home/chris/catest/hyperledger/tls-ca/admin
+
+fabric-ca-client enroll -d -u https://tls-ca-admin:tls-ca-adminpw@0.0.0.0:7052
+./fabric-ca-client register -d --id.name peer1-org1 --id.secret peer1PW --id.type peer -u https://0.0.0.0:7052
+./fabric-ca-client register -d --id.name peer2-org1 --id.secret peer2PW --id.type peer -u https://0.0.0.0:7052
+./fabric-ca-client register -d --id.name peer1-org2 --id.secret peer1PW --id.type peer -u https://0.0.0.0:7052
+./fabric-ca-client register -d --id.name peer2-org2 --id.secret peer2PW --id.type peer -u https://0.0.0.0:7052
+./fabric-ca-client register -d --id.name orderer1-org0 --id.secret ordererPW --id.type orderer -u https://0.0.0.0:7052
+
+--> Setup Orderer Org CA
+
+see rca0 yaml file
+
+--> Enroll Orderer Org’s CA Admin
+
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/org0/ca/crypto/ca-cert.pem
+export FABRIC_CA_CLIENT_HOME=/home/chris/catest/hyperledger/org0/ca/admin
+
+./fabric-ca-client enroll -d -u https://rca-org0-admin:rca-org0-adminpw@0.0.0.0:7053
+./fabric-ca-client register -d --id.name orderer1-org0 --id.secret ordererpw --id.type orderer -u https://0.0.0.0:7053
+./fabric-ca-client register -d --id.name admin-org0 --id.secret org0adminpw --id.type admin --id.attrs "hf.Registrar.Roles=client,hf.Registrar.Attributes=*,hf.Revoker=true,hf.GenCRL=true,admin=true:ecert,abac.init=true:ecert" -u https://0.0.0.0:7053
+
+--> Setup Org1’s CA
+
+see rca1 yaml file
+
+--> Enroll Org1’s CA Admin
+
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/org1/ca/crypto/ca-cert.pem
+export FABRIC_CA_CLIENT_HOME=/home/chris/catest/hyperledger/org1/ca/admin
+
+./fabric-ca-client enroll -d -u https://rca-org1-admin:rca-org1-adminpw@0.0.0.0:7054
+./fabric-ca-client register -d --id.name peer1-org1 --id.secret peer1PW --id.type peer -u https://0.0.0.0:7054
+./fabric-ca-client register -d --id.name peer2-org1 --id.secret peer2PW --id.type peer -u https://0.0.0.0:7054
+./fabric-ca-client register -d --id.name admin-org1 --id.secret org1AdminPW --id.type user -u https://0.0.0.0:7054
+./fabric-ca-client register -d --id.name user-org1 --id.secret org1UserPW --id.type user -u https://0.0.0.0:7054
+
+--> Setup Org2’s CA
+
+see rca2 yaml file
+
+--> Enrolling Org2’s CA Admin
+
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/org2/ca/crypto/ca-cert.pem
+export FABRIC_CA_CLIENT_HOME=/home/chris/catest/hyperledger/org2/ca/admin
+
+./fabric-ca-client enroll -d -u https://rca-org2-admin:rca-org2-adminpw@0.0.0.0:7055
+./fabric-ca-client register -d --id.name peer1-org2 --id.secret peer1PW --id.type peer -u https://0.0.0.0:7055
+./fabric-ca-client register -d --id.name peer2-org2 --id.secret peer2PW --id.type peer -u https://0.0.0.0:7055
+./fabric-ca-client register -d --id.name admin-org2 --id.secret org2AdminPW --id.type user -u https://0.0.0.0:7055
+./fabric-ca-client register -d --id.name user-org2 --id.secret org2UserPW --id.type user -u https://0.0.0.0:7055
+
+-------------------------------------------
+Setup Peers
+-------------------------------------------
+
+--> Setup Org1’s Peers
+
+--> Enroll Peer1
+
+export FABRIC_CA_CLIENT_HOME=/home/chris/catest/hyperledger/org1/peer1
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/org1/peer1/assets/ca/ca-cert.pem
+export FABRIC_CA_CLIENT_MSPDIR=msp
+./fabric-ca-client enroll -d -u https://peer1-org1:peer1PW@0.0.0.0:7054
+
+
+export FABRIC_CA_CLIENT_MSPDIR=tls-msp
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/org1/peer1/assets/tls-ca/tls-cert.pem
+./fabric-ca-client enroll -d -u https://peer1-org1:peer1PW@0.0.0.0:7052 --enrollment.profile tls --csr.hosts peer1-org1
+
+--> Enroll Peer2
+
+export FABRIC_CA_CLIENT_HOME=/home/chris/catest/hyperledger/org1/peer2
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/org1/peer2/assets/ca/ca-cert.pem
+export FABRIC_CA_CLIENT_MSPDIR=msp
+./fabric-ca-client enroll -d -u https://peer2-org1:peer2PW@0.0.0.0:7054
+
+
+export FABRIC_CA_CLIENT_MSPDIR=tls-msp
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/org1/peer2/assets/tls-ca/tls-cert.pem
+./fabric-ca-client enroll -d -u https://peer2-org1:peer2PW@0.0.0.0:7052 --enrollment.profile tls --csr.hosts peer2-org1
+
+--> Enroll Org1’s Admin
+
+export FABRIC_CA_CLIENT_HOME=/home/chris/catest/hyperledger/org1/admin
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/org1/peer1/assets/ca/ca-cert.pem
+export FABRIC_CA_CLIENT_MSPDIR=msp
+./fabric-ca-client enroll -d -u https://admin-org1:org1AdminPW@0.0.0.0:7054
+
+----------------------------------
+Launch Org1’s Peers
+
+see peer1 and peer2 org1 yaml files
+----------------------------------
+
+--> Setup Org2’s Peers
+
+--> Enroll Peer1
+
+export FABRIC_CA_CLIENT_HOME=/home/chris/catest/hyperledger/org2/peer1
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/org2/peer1/assets/ca/ca-cert.pem
+export FABRIC_CA_CLIENT_MSPDIR=msp
+./fabric-ca-client enroll -d -u https://peer1-org2:peer1PW@0.0.0.0:7055
+
+
+export FABRIC_CA_CLIENT_MSPDIR=tls-msp
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/org2/peer1/assets/tls-ca/tls-cert.pem
+./fabric-ca-client enroll -d -u https://peer1-org2:peer1PW@0.0.0.0:7052 --enrollment.profile tls --csr.hosts peer1-org2
+
+--> Enroll Peer2
+
+export FABRIC_CA_CLIENT_HOME=/home/chris/catest/hyperledger/org2/peer2
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/org2/peer2/assets/ca/ca-cert.pem
+export FABRIC_CA_CLIENT_MSPDIR=msp
+./fabric-ca-client enroll -d -u https://peer2-org2:peer2PW@0.0.0.0:7055
+
+
+export FABRIC_CA_CLIENT_MSPDIR=tls-msp
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/org2/peer2/assets/tls-ca/tls-cert.pem
+./fabric-ca-client enroll -d -u https://peer2-org2:peer2PW@0.0.0.0:7052 --enrollment.profile tls --csr.hosts peer2-org2
+
+--> Enroll Org2’s Admin
+
+export FABRIC_CA_CLIENT_HOME=/home/chris/catest/hyperledger/org2/admin
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/org2/peer1/assets/ca/ca-cert.pem
+export FABRIC_CA_CLIENT_MSPDIR=msp
+./fabric-ca-client enroll -d -u https://admin-org2:org2AdminPW@0.0.0.0:7055
+
+------------------------------------------
+Setup Orderer
+------------------------------------------
+
+Enroll Orderer
+
+export FABRIC_CA_CLIENT_HOME=/home/chris/catest/hyperledger/org0/orderer
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/org0/orderer/assets/ca/ca-cert.pem
+./fabric-ca-client enroll -d -u https://orderer1-org0:ordererpw@0.0.0.0:7053
+
+export FABRIC_CA_CLIENT_MSPDIR=tls-msp
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/org0/orderer/assets/tls-ca/tls-cert.pem
+./fabric-ca-client enroll -d -u https://orderer1-org0:ordererPW@0.0.0.0:7052 --enrollment.profile tls --csr.hosts orderer1-org0
+
+--> Enroll Org0’s Admin
+
+export FABRIC_CA_CLIENT_HOME=/home/chris/catest/hyperledger/org0/admin
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/home/chris/catest/hyperledger/org0/orderer/assets/ca/ca-cert.pem
+export FABRIC_CA_CLIENT_MSPDIR=msp
+./fabric-ca-client enroll -d -u https://admin-org0:org0adminpw@0.0.0.0:7053
+
+--> 
+
+./configtxgen -profile OrgsOrdererGenesis -outputBlock /home/chris/catest/hyperledger/org0/orderer/genesis.block -channelID syschannel
+./configtxgen -profile OrgsChannel -outputCreateChannelTx /home/chris/catest/hyperledger/org0/orderer/channel.tx -channelID mychannel
+
+
+
